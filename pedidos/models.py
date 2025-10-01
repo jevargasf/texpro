@@ -31,4 +31,7 @@ class Pedido(models.Model):
     cliente = models.ForeignKey(Cliente, on_delete=models.CASCADE, related_name='clientes')
     estado_pedido = models.ForeignKey(EstadoPedido, on_delete=models.CASCADE, related_name='estados_pedidos')
     estado_pago = models.ForeignKey(EstadoPago, on_delete=models.CASCADE, related_name='estados_pagos')
-    
+
+
+    def __str__(self):
+        return f"Pedido para: {self.cliente.nombre} "

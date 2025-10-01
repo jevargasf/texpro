@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <title>Pedidos</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css" rel="stylesheet">
+</head>
+<body>
+
+<div class="container mt-4">
+    <h2 class="text-center">Nuevo Pedido</h2>
+    <form action="/registrar_pedido" method="POST">
+        {% csrf_token %}
+        <div class="mb-3">
+            <select name="usuario_id" class="form-select">
+                {% for u in usuarios %}
+                    <option value="{{ u.id }}">{{ u.nombre }}</option>
+                {% endfor %}
+            </select>
+        </div>
+        <div class="mb-3">
+            <select name="cliente_id" class="form-select">
+                {% for c in clientes %}
+                    <option value="{{ c.id }}">{{ c.nombre }}</option>
+                {% endfor %}
+            </select>
+        </div>
+        <div class="mb-3">
+            <select name="producto_id" class="form-select">
+                {% for p in productos %}
+                    <option value="{{ p.id }}">{{ p.nombre }}</option>
+                {% endfor %}
+            </select>
+        </div>
+        <div class="mb-3">
+            <input type="date" name="fecha_pedido" class="form-control" required>
+        </div>
+        <div class="mb-3">
+            <input type="date" name="fecha_entrega" class="form-control" required>
+        </div>
+        <div class="mb-3">
+            <select name="estado_pedido_id" class="form-select">
+                {% for e in estados_pedidos %}
+                    <option value="{{ e.id }}">{{ e.nombre }}</option>
+                {% endfor %}
+            </select>
+        </div>
+        <div class="mb-3">
+            <select name="estado_pago_id" class="form-select">
+                {% for e in estados_pagos %}
+                    <option value="{{ e.id }}">{{ e.nombre }}</option>
+                {% endfor %}
+            </select>
+        </div>
+        <div class="mb-3">
+            <input type="number" name="subtotal" class="form-control" placeholder="Subtotal" required>
+        </div>
+        <div class="mb-3">
+            <input type="number" name="abono" class="form-control" placeholder="Abono" required>
+        </div>
+        <button class="btn btn-success">Registrar Pedido</button>
+    </form>
+</div>
+
+</body>
+</html>
