@@ -55,12 +55,12 @@ def crear_pedido(request):
                     correo=correo,
                     telefono=telefono
                 )
-
+                cliente_obj = Cliente.objects.get(correo=correo)
                 # Crear pedido
                 pedido = Pedido.objects.create(
                     fecha_entrega=fecha,
                     usuario=usuario,
-                    cliente=cliente
+                    cliente=cliente_obj
                 )
 
                 # Formset de productos

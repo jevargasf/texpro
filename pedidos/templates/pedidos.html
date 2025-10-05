@@ -31,7 +31,7 @@
                     <td>${{ pedido.subtotal }}</td>
                     <td>${{ pedido.abono|default:"0" }}</td>
                     <td>{{ pedido.usuario.nombre }}</td>
-                    <td>{{ pedido.cliente_pedido_relaciones.cliente.nombre }}</td>
+                    <td>{{ pedido.cliente.nombre }}</td>
                     <td>{{ pedido.estado_pedido.nombre }}</td>
                     <td>{{ pedido.estado_pago.nombre }}</td>
                     <td>
