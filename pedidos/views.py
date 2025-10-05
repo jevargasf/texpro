@@ -1,8 +1,11 @@
 # Create your views here.
 from django.shortcuts import render, redirect, get_object_or_404
 from main.models import Usuario
-from pedidos.models import Pedido, EstadoPago, EstadoPedido, Cliente
-from productos.models import Producto, ProductoMedida, Medida, EstadoProducto
+from pedidos.models import Pedido, Cliente
+from productos.models import Producto, ProductoMedida, Medida, EstadoProducto, CategoriaMedida
+from django.shortcuts import render, redirect
+from productos.forms import ProductoFormSet, ProductoMedidaFormSet, ProductoMedidaForm
+from collections import defaultdict
 
 # -----------------------------------------------------------------
 # LISTAR PRODUCTOS
@@ -17,155 +20,106 @@ def mostrar_listado_pedidos(request):
     else:
         return render(request, "main/index.html", {"r2": "Debe iniciar sesión para ingresar a la página."})
 
-
-# -----------------------------------------------------------------
-# CREAR PRODUCTO
-def mostrar_form_reg_producto(request):
-    if request.session.get("estado_sesion"):
-        if request.method == "POST":
-            nombre = request.POST["nombre"]
-            descripcion = request.POST.get("descripcion", "")
-            precio_unitario = int(request.POST["precio_unitario"])
-            cantidad = int(request.POST["cantidad"])
-            estado_producto = EstadoProducto.objects.get(pk=request.POST["estado_producto"])
-
-            producto = Producto.objects.create(
-                nombre=nombre,
-                descripcion=descripcion,
-                precio_unitario=precio_unitario,
-                cantidad=cantidad,
-                estado_producto=estado_producto
-            )
-
-            # Opcional: asociar medidas al producto
-            if "medida" in request.POST and request.POST["medida"] and request.POST["longitud"]:
-                medida = Medida.objects.get(pk=request.POST["medida"])
-                longitud = int(request.POST["longitud"])
-                ProductoMedida.objects.create(
-                    producto=producto,
-                    medidas=medida,
-                    longitud=longitud
-                )
-
-            return redirect("listado_productos")
-
-        else:
-            datos = {
-                "estados_producto": EstadoProducto.objects.all(),
-                "medidas": Medida.objects.all(),
-                "nombre_usuario": request.session.get("nombre_usuario").upper()
-            }
-            return render(request, "productos/form_reg.html", datos)
-    else:
-        return render(request, "index.html", {"r2": "Debe iniciar sesión para ingresar a la página."})
-
-
-# -----------------------------------------------------------------
-# ACTUALIZAR PRODUCTO
-def mostrar_form_act_producto(request, producto_id):
-    if request.session.get("estado_sesion"):
-        producto = get_object_or_404(Producto, pk=producto_id)
-
-        if request.method == "POST":
-            producto.nombre = request.POST["nombre"]
-            producto.descripcion = request.POST.get("descripcion", "")
-            producto.precio_unitario = int(request.POST["precio_unitario"])
-            producto.cantidad = int(request.POST["cantidad"])
-            producto.estado_producto = EstadoProducto.objects.get(pk=request.POST["estado_producto"])
-            producto.save()
-
-            return redirect("listado_productos")
-
-        else:
-            datos = {
-                "producto": producto,
-                "estados_producto": EstadoProducto.objects.all(),
-                "medidas": Medida.objects.all(),
-                "nombre_usuario": request.session.get("nombre_usuario").upper()
-            }
-            return render(request, "productos/form_act.html", datos)
-    else:
-        return render(request, "index.html", {"r2": "Debe iniciar sesión para ingresar a la página."})
-
-
-# -----------------------------------------------------------------
-# ELIMINAR PRODUCTO
-def eliminar_producto(request, producto_id):
-    if request.session.get("estado_sesion"):
-        producto = get_object_or_404(Producto, pk=producto_id)
-        producto.delete()
-        return redirect("listado_productos")
-    else:
-        return render(request, "index.html", {"r2": "Debe iniciar sesión para ingresar a la página."})
-    
-
-
 # -----------------------------------------------------------------
 # CREAR PEDIDO
-def mostrar_form_reg_pedido(request):
+
+def crear_pedido(request):
     if request.session.get('estado_sesion'):
-        if request.method == "POST":
-            cliente_id = request.POST["cliente"]
-            estado_pedido_id = request.POST["estado_pedido"]
-            estado_pago_id = request.POST["estado_pago"]
+        if request.method == 'POST':
+            try:
+                # Datos del cliente y pedido
+                fecha = request.POST.get('fecha')
+                nombre_cliente = request.POST.get('nombre')
+                apellido_cliente = request.POST.get('apellido')
+                correo = request.POST.get('correo')
+                telefono = request.POST.get('telefono')
+                usuario = Usuario.objects.get(pk=request.session.get('id_usuario'))
 
-            cliente = Cliente.objects.get(pk=cliente_id)
-            estado_pedido = EstadoPedido.objects.get(pk=estado_pedido_id)
-            estado_pago = EstadoPago.objects.get(pk=estado_pago_id)
-            usuario = Usuario.objects.get(pk=request.session.get("id_usuario"))
+                # Crear cliente
+                cliente = Cliente.objects.create(
+                    nombre=nombre_cliente,
+                    apellido=apellido_cliente,
+                    correo=correo,
+                    telefono=telefono
+                )
 
-            Pedido.objects.create(
-                fecha_entrega=request.POST["fecha_entrega"],
-                subtotal=int(request.POST["subtotal"]),
-                abono=int(request.POST.get("abono", 0)),
-                usuario=usuario,
-                cliente=cliente,
-                estado_pedido=estado_pedido,
-                estado_pago=estado_pago
-            )
+                # Crear pedido
+                pedido = Pedido.objects.create(
+                    fecha_entrega=fecha,
+                    usuario=usuario,
+                    cliente=cliente
+                )
 
-            return redirect("listado_pedidos")
+                # Formset de productos
+                producto_formset = ProductoFormSet(request.POST, queryset=Producto.objects.none())
+
+                if producto_formset.is_valid():
+                    productos = producto_formset.save(commit=False)
+
+                    for i, producto in enumerate(productos):
+                        producto.pedido = pedido
+                        producto.save()
+
+                        # Procesar medidas para este producto
+                        medida_prefix = f'form-{i}-medidas'
+                        medida_formset = ProductoMedidaFormSet(
+                            request.POST,
+                            instance=producto,
+                            prefix=medida_prefix
+                        )
+
+                        if medida_formset.is_valid():
+                            medida_formset.save()
+                        else:
+                            return render(request, 'crear_pedido.html', {
+                                'formset': producto_formset,
+                                'error': f'Error en medidas del producto {producto.nombre}'
+                            })
+
+                    return redirect('detalle_pedido', pedido_id=pedido.id)
+
+                else:
+                    return render(request, 'crear_pedido.html', {
+                        'formset': producto_formset,
+                        'error': 'Error en los datos de los productos.'
+                    })
+
+            except Exception as e:
+                return render(request, 'crear_pedido.html', {
+                    'formset': ProductoFormSet(queryset=Producto.objects.none()),
+                    'error': f'Error al crear el pedido: {str(e)}'
+                })
+
         else:
-            datos = {
-                "clientes": Cliente.objects.all(),
-                "estados_pedido": EstadoPedido.objects.all(),
-                "estados_pago": EstadoPago.objects.all(),
-                "nombre_usuario": request.session.get("nombre_usuario").upper()
-            }
-            return render(request, "pedidos/form_reg.html", datos)
+
+
+            medida_choices = {}
+            for categoria in CategoriaMedida.objects.prefetch_related('medida_set'):
+                medida_choices[categoria.nombre] = [
+                    (medida.id, f"{medida.nombre} ({medida.unidad})")
+                    for medida in categoria.medida_set.all()
+                ]
+
+            formset = ProductoFormSet(queryset=Producto.objects.none())
+            return render(request, 'crear_pedido.html', {
+                'formset': formset,
+                'medida_choices': medida_choices
+            })
+
+
+
+
     else:
-        return render(request, "index.html", {"r2": "Debe iniciar sesión para ingresar a la página."})
+        return redirect('login')
+
+
 
 
 # -----------------------------------------------------------------
 # ACTUALIZAR PEDIDO
-def mostrar_form_act_pedido(request, pedido_id):
-    if request.session.get('estado_sesion'):
-        pedido = get_object_or_404(Pedido, pk=pedido_id)
-
-        if request.method == "POST":
-            pedido.fecha_entrega = request.POST["fecha_entrega"]
-            pedido.subtotal = int(request.POST["subtotal"])
-            pedido.abono = int(request.POST.get("abono", 0))
-
-            pedido.cliente = Cliente.objects.get(pk=request.POST["cliente"])
-            pedido.estado_pedido = EstadoPedido.objects.get(pk=request.POST["estado_pedido"])
-            pedido.estado_pago = EstadoPago.objects.get(pk=request.POST["estado_pago"])
-            pedido.save()
-
-            return redirect("listado_pedidos")
-        else:
-            datos = {
-                "pedido": pedido,
-                "clientes": Cliente.objects.all(),
-                "estados_pedido": EstadoPedido.objects.all(),
-                "estados_pago": EstadoPago.objects.all(),
-                "nombre_usuario": request.session.get("nombre_usuario").upper()
-            }
-            return render(request, "pedidos/form_act.html", datos)
-    else:
-        return render(request, "index.html", {"r2": "Debe iniciar sesión para ingresar a la página."})
-
+def seguimiento_pedido(request):
+    pass
+    # template que facilita el seguimiento de un pedido
 
 # -----------------------------------------------------------------
 # ELIMINAR PEDIDO

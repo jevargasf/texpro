@@ -25,12 +25,12 @@ class Cliente(models.Model):
 class Pedido(models.Model):
     fecha_pedido = models.DateTimeField(auto_now=True, blank=False, null=False)
     fecha_entrega = models.DateTimeField(blank=False, null=False)
-    subtotal = models.PositiveIntegerField(blank=False, null=False)
-    abono = models.IntegerField(blank=True, null=True)
+    subtotal = models.PositiveIntegerField(blank=True, null=True)
+    abono = models.IntegerField(blank=True, null=True, default=0)
     usuario = models.ForeignKey(Usuario, on_delete=models.CASCADE, related_name='usuarios')
     cliente = models.ForeignKey(Cliente, on_delete=models.CASCADE, related_name='clientes')
-    estado_pedido = models.ForeignKey(EstadoPedido, on_delete=models.CASCADE, related_name='estados_pedidos')
-    estado_pago = models.ForeignKey(EstadoPago, on_delete=models.CASCADE, related_name='estados_pagos')
+    estado_pedido = models.ForeignKey(EstadoPedido, default=1, on_delete=models.CASCADE, related_name='estados_pedidos')
+    estado_pago = models.ForeignKey(EstadoPago, default=1, on_delete=models.CASCADE, related_name='estados_pagos')
 
 
     def __str__(self):

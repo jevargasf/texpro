@@ -1,0 +1,194 @@
+[
+  {
+    "model": "productos.categoriamedida",
+    "pk": 1,
+    "fields": {
+      "nombre": "Cuello y torso"
+    }
+  },
+  {
+    "model": "productos.categoriamedida",
+    "pk": 2,
+    "fields": {
+      "nombre": "Brazos"
+    }
+  },
+  {
+    "model": "productos.categoriamedida",
+    "pk": 3,
+    "fields": {
+      "nombre": "Piernas"
+    }
+  },
+  {
+    "model": "productos.medida",
+    "pk": 1,
+    "fields": {
+      "nombre": "Contorno de cuello",
+      "unidad": "cm",
+      "categoria": 1
+    }
+  },
+  {
+    "model": "productos.medida",
+    "pk": 2,
+    "fields": {
+      "nombre": "Contorno de pecho",
+      "unidad": "cm",
+      "categoria": 1
+    }
+  },
+  {
+    "model": "productos.medida",
+    "pk": 3,
+    "fields": {
+      "nombre": "Contorno de cintura",
+      "unidad": "cm",
+      "categoria": 1
+    }
+  },
+  {
+    "model": "productos.medida",
+    "pk": 4,
+    "fields": {
+      "nombre": "Contorno de busto",
+      "unidad": "cm",
+      "categoria": 1
+    }
+  },
+  {
+    "model": "productos.medida",
+    "pk": 5,
+    "fields": {
+      "nombre": "Contorno de cadera",
+      "unidad": "cm",
+      "categoria": 1
+    }
+  },
+  {
+    "model": "productos.medida",
+    "pk": 6,
+    "fields": {
+      "nombre": "Ancho de espalda",
+      "unidad": "cm",
+      "categoria": 1
+    }
+  },
+  {
+    "model": "productos.medida",
+    "pk": 7,
+    "fields": {
+      "nombre": "Altura de hombros",
+      "unidad": "cm",
+      "categoria": 1
+    }
+  },
+  {
+    "model": "productos.medida",
+    "pk": 8,
+    "fields": {
+      "nombre": "Largo de talle",
+      "unidad": "cm",
+      "categoria": 1
+    }
+  },
+  {
+    "model": "productos.medida",
+    "pk": 9,
+    "fields": {
+      "nombre": "Largo del chaleco",
+      "unidad": "cm",
+      "categoria": 1
+    }
+  },
+  {
+    "model": "productos.medida",
+    "pk": 10,
+    "fields": {
+      "nombre": "Largo total",
+      "unidad": "cm",
+      "categoria": 1
+    }
+  },
+  {
+    "model": "productos.medida",
+    "pk": 11,
+    "fields": {
+      "nombre": "Largo de saco",
+      "unidad": "cm",
+      "categoria": 1
+    }
+  },
+  {
+    "model": "productos.medida",
+    "pk": 12,
+    "fields": {
+      "nombre": "Largo de falda",
+      "unidad": "cm",
+      "categoria": 1
+    }
+  },
+  {
+    "model": "productos.medida",
+    "pk": 13,
+    "fields": {
+      "nombre": "Largo de manga",
+      "unidad": "cm",
+      "categoria": 2
+    }
+  },
+  {
+    "model": "productos.medida",
+    "pk": 14,
+    "fields": {
+      "nombre": "Largo de pantalón",
+      "unidad": "cm",
+      "categoria": 3
+    }
+  },
+  {
+    "model": "productos.medida",
+    "pk": 15,
+    "fields": {
+      "nombre": "Tiro delantero",
+      "unidad": "cm",
+      "categoria": 3
+    }
+  },
+  {
+    "model": "productos.medida",
+    "pk": 16,
+    "fields": {
+      "nombre": "Tiro trasero",
+      "unidad": "cm",
+      "categoria": 3
+    }
+  },
+  {
+    "model": "productos.medida",
+    "pk": 17,
+    "fields": {
+      "nombre": "Largo de entrepierna",
+      "unidad": "cm",
+      "categoria": 3
+    }
+  },
+  {
+    "model": "productos.medida",
+    "pk": 18,
+    "fields": {
+      "nombre": "Ancho de muslo",
+      "unidad": "cm",
+      "categoria": 3
+    }
+  },
+  {
+    "model": "productos.medida",
+    "pk": 19,
+    "fields": {
+      "nombre": "Ancho de bota",
+      "unidad": "cm",
+      "categoria": 3
+    }
+  }
+]

@@ -1,0 +1,96 @@
+{% extends 'base.html' %}
+{% load static %}
+{% load filtros %}
+
+{% block content %}
+<div class="container mt-5">
+    <h2 class="mb-4">Crear Pedido</h2>
+
+    <form method="post">
+        {% csrf_token %}
+
+        <!-- Datos del cliente -->
+        <div class="row mb-3">
+            <div class="col-md-6">
+                <label class="form-label">Nombre</label>
+                <input type="text" name="nombre" class="form-control" required>
+            </div>
+            <div class="col-md-6">
+                <label class="form-label">Apellido</label>
+                <input type="text" name="apellido" class="form-control" required>
+            </div>
+        </div>
+
+        <div class="row mb-3">
+            <div class="col-md-6">
+                <label class="form-label">Correo</label>
+                <input type="email" name="correo" class="form-control" required>
+            </div>
+            <div class="col-md-6">
+                <label class="form-label">Teléfono</label>
+                <input type="text" name="telefono" class="form-control" required>
+            </div>
+        </div>
+
+        <div class="mb-4">
+            <label class="form-label">Fecha de entrega</label>
+            <input type="datetime-local" name="fecha" class="form-control" required>
+        </div>
+
+        <!-- Productos -->
+        <h4 class="mb-3">Productos</h4>
+        {{ formset.management_form }}
+        <div id="formset-container">
+            {% for form in formset %}
+                <div class="formset-row border rounded p-3 mb-4">
+                    <h5>Producto {{ forloop.counter }}</h5>
+                    {% for field in form.visible_fields %}
+                        <div class="mb-3">
+                            <label class="form-label">{{ field.label }}</label>
+                            {{ field }}
+                        </div>
+                    {% endfor %}
+
+                    <!-- Medidas -->
+                    <div class="medidas-container" data-product-index="{{ forloop.counter0 }}">
+                        <h6>Medidas</h6>
+                        <div class="medida-form mb-2">
+                            <div class="row align-items-end">
+                                <div class="col-md-5">
+                                    <label class="form-label">Medida</label>
+                                    <select name="form-{{ forloop.counter0 }}-medidas-0-medidas" class="form-select">
+                                        {% for categoria, opciones in medida_choices.items %}
+                                            <optgroup label="{{ categoria }}">
+                                                {% for id, label in opciones %}
+                                                    <option value="{{ id }}">{{ label }}</option>
+                                                {% endfor %}
+                                            </optgroup>
+                                        {% endfor %}
+                                    </select>
+                                </div>
+                                <div class="col-md-5">
+                                    <label class="form-label">Longitud</label>
+                                    {{ form.longitud }}
+                                </div>
+                                <div class="col-md-2">
+                                    <button type="button" class="btn btn-sm btn-danger remove-medida-btn">Eliminar</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <button type="button" class="btn btn-sm btn-outline-secondary add-medida-btn" data-product-index="{{ forloop.counter0 }}">Agregar medida</button>
+                    <button type="button" class="btn btn-sm btn-danger remove-form">Eliminar producto</button>
+                </div>
+            {% endfor %}
+        </div>
+
+        <button type="button" class="btn btn-secondary mb-3" id="add-form">Agregar producto</button>
+        <br>
+        <button type="submit" class="btn btn-primary">Crear Pedido</button>
+    </form>
+</div>
+
+<!-- Tu JS -->
+<script src="{% static 'js/pedidos.js' %}"></script>
+{% endblock %}
