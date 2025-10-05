@@ -6,49 +6,49 @@
 <div class="container mt-4">
 <h4>Editar Pedido</h4>
 
-    <form action="pedidos/editar/{{ pedido.id }}" method="post">
+    <form action="/pedidos/editar/{{ pedido.id }}" method="post">
     {% csrf_token %}
     <div class="row mb-3">
       <div class="col-md-6">
         <label class="form-label">Nombre del Cliente</label>
-        <input type="text" name="nombre" class="form-control" value="{{ pedido.cliente.nombre }}">
+        <input type="text" name="nombre" class="form-control" value="{{ pedido.cliente.nombre }}" required>
       </div>
       <div class="col-md-6">
         <label class="form-label">Apellido</label>
-        <input type="text" name="apellido" class="form-control" value="{{ pedido.cliente.apellido }}">
+        <input type="text" name="apellido" class="form-control" value="{{ pedido.cliente.apellido }}" required>
       </div>
     </div>
 
     <div class="row mb-3">
       <div class="col-md-6">
         <label class="form-label">Correo</label>
-        <input type="email" name="correo" class="form-control" value="{{ pedido.cliente.correo }}">
+        <input type="email" name="correo" class="form-control" value="{{ pedido.cliente.correo }}" required>
       </div>
       <div class="col-md-6">
         <label class="form-label">Teléfono</label>
-        <input type="text" name="telefono" class="form-control" value="{{ pedido.cliente.telefono }}">
+        <input type="text" name="telefono" class="form-control" value="{{ pedido.cliente.telefono }}" required>
       </div>
     </div>
 
     <div class="row mb-3">
       <div class="col-md-6">
         <label class="form-label">Fecha de Entrega</label>
-        <input type="datetime-local" name="fecha_entrega" class="form-control" value="{{ pedido.fecha_entrega|date:'Y-m-d\TH:i' }}">
+        <input type="datetime-local" name="fecha_entrega" class="form-control" value="{{ pedido.fecha_entrega|date:'Y-m-d\TH:i' }}" required>
       </div>
       <div class="col-md-6">
         <label class="form-label">Subtotal</label>
-        <input type="number" name="subtotal" class="form-control" value="{{ pedido.subtotal }}">
+        <input type="number" name="subtotal" class="form-control" value="{{ pedido.subtotal }}" required>
       </div>
     </div>
 
     <div class="row mb-3">
       <div class="col-md-6">
         <label class="form-label">Abono</label>
-        <input type="number" name="abono" class="form-control" value="{{ pedido.abono }}">
+        <input type="number" name="abono" class="form-control" value="{{ pedido.abono }}" required>
       </div>
       <div class="col-md-6">
         <label class="form-label">Estado del Pago</label>
-        <select name="estado_pago" class="form-select">
+        <select name="estado_pago" class="form-select" required>
           {% for estado in estados_pago %}
             <option value="{{ estado.id }}" {% if estado.id == pedido.estado_pago.id %}selected{% endif %}>{{ estado.nombre }}</option>
           {% endfor %}
@@ -58,83 +58,61 @@
 
     <div class="mb-3">
       <label class="form-label">Estado del Pedido</label>
-      <select name="estado_pedido" class="form-select">
+      <select name="estado_pedido" class="form-select" required>
         {% for estado in estados_pedido %}
           <option value="{{ estado.id }}" {% if estado.id == pedido.estado_pedido.id %}selected{% endif %}>{{ estado.nombre }}</option>
         {% endfor %}
       </select>
     </div>
-
-    <button type="submit" class="btn btn-primary">Guardar cambios</button>
-    </form>
 </div>
 
 <div class="container mt-4">
   <h4>Editar Productos del Pedido</h4>
 
-  {% for producto in pedido.pedidos.all %}
-    <div class="card mb-4">
-      <div class="card-header bg-light">
-        <strong>Producto {{ forloop.counter }}</strong>
-      </div>
-      <div class="card-body">
-        <div class="mb-3">
-          <label class="form-label">Nombre</label>
-          <input type="text" name="producto_{{ producto.id }}_nombre" class="form-control" value="{{ producto.nombre }}">
-        </div>
-        <div class="mb-3">
-          <label class="form-label">Descripción</label>
-          <textarea name="producto_{{ producto.id }}_descripcion" class="form-control">{{ producto.descripcion }}</textarea>
-        </div>
-        <div class="row mb-3">
-          <div class="col-md-6">
-            <label class="form-label">Precio Unitario</label>
-            <input type="number" name="producto_{{ producto.id }}_precio" class="form-control" value="{{ producto.precio_unitario }}">
-          </div>
-          <div class="col-md-6">
-            <label class="form-label">Cantidad</label>
-            <input type="number" name="producto_{{ producto.id }}_cantidad" class="form-control" value="{{ producto.cantidad }}">
-          </div>
-        </div>
-        <div class="mb-3">
-          <label class="form-label">Estado</label>
-          <select name="producto_{{ producto.id }}_estado" class="form-select">
-            {% for estado in estados_producto %}
-              <option value="{{ estado.id }}" {% if estado.id == producto.estado_producto.id %}selected{% endif %}>{{ estado.nombre }}</option>
-            {% endfor %}
-          </select>
-        </div>
-
-        <hr>
-        <h6>Medidas</h6>
-        {% for medida in producto.productos.all %}
-          <div class="row mb-2">
-            <div class="col-md-6">
-              <label class="form-label">Medida</label>
-              <select name="medida_{{ medida.id }}_medidas" class="form-select">
-                {% for categoria, opciones in categorias_medida %}
-                    <optgroup label="{{ categoria }}">
-                        {% for id, label in opciones %}
-                            {% if id == medida.id %}
-                            <option value="{{ id }}" selected>{{ label }}</option>
-                            {% else %}
-                            <option value="{{ id }}">{{ label }}</option>
-                            {% endif %}
-                        {% endfor %}
-                    </optgroup>
+    <!-- Productos -->
+    {{ formset.management_form }}
+    <div id="formset-container">
+        {% for form in formset %}
+            <div class="formset-row border rounded p-3 mb-4 bg-body">
+                <h5>Producto {{ forloop.counter }}</h5>
+                {% for field in form.visible_fields %}
+                    <div class="mb-3">
+                        <label class="form-label">{{ field.label }}</label>
+                        {{ field }}
+                    </div>
                 {% endfor %}
-              </select>
+
+                <!-- Medidas -->
+                <div class="medidas-container" data-product-index="{{ forloop.counter0 }}">
+                    <h6>Medidas</h6>
+                    <div class="medida-form mb-2">
+                        <div class="row align-items-end">
+                            {% for medida in medida_formsets %}
+                                {{ medida }}
+                            {% endfor %}
+                            <div class="col-md-2">
+                                <button type="button" class="btn btn-sm btn-danger remove-medida-btn">Eliminar</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <button type="button" class="btn btn-sm btn-outline-secondary add-medida-btn" data-product-index="{{ forloop.counter0 }}">Agregar medida</button>
+                <button type="button" class="btn btn-sm btn-danger remove-form">Eliminar producto</button>
             </div>
-            <div class="col-md-6">
-              <label class="form-label">Longitud</label>
-              <input type="number" name="medida_{{ medida.id }}_longitud" class="form-control" value="{{ medida.longitud }}">
-            </div>
-          </div>
         {% endfor %}
-      </div>
     </div>
-  {% endfor %}
+
 </div>
+        <div class="row">
+        <button type="button" class="btn btn-secondary m-3 col-sm-3"><a href="/pedidos" class="text-decoration-none text-white">Volver</a></button>
+        <button type="button" class="btn btn-primary m-3 col-sm-3" id="add-form">Agregar producto</button>
+        <button type="submit" class="btn btn-success m-3 col-sm-3">Guardar cambios</button>
+
+        </div>
+    </form>
 
 
+<!-- Tu JS -->
+<script src="{% static 'js/pedidos.js' %}"></script>
 {% endblock %}

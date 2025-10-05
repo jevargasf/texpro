@@ -4,10 +4,9 @@ from main.models import Usuario
 from pedidos.models import Pedido, Cliente, EstadoPago, EstadoPedido
 from productos.models import Producto, ProductoMedida, Medida, EstadoProducto, CategoriaMedida
 from django.shortcuts import render, redirect
-from productos.forms import ProductoFormSet, ProductoMedidaFormSet, ProductoMedidaForm
+from productos.forms import ProductoFormSet, ProductoMedidaFormSet, ProductoMedidaForm, ProductoEditarFormSet, ProductoMedidaEditarFormSet
 from collections import defaultdict
-
-
+from django.contrib import messages
 # -----------------------------------------------------------------
 # LISTAR PRODUCTOS
 
@@ -49,7 +48,8 @@ def crear_pedido(request):
                 usuario = Usuario.objects.get(pk=request.session.get('id_usuario'))
 
                 # Crear cliente
-                cliente = Cliente.objects.create(
+
+                cliente = Cliente.objects.get_or_create(
                     nombre=nombre_cliente,
                     apellido=apellido_cliente,
                     correo=correo,
@@ -96,7 +96,8 @@ def crear_pedido(request):
                                 except Medida.DoesNotExist:
                                     continue  # ignorar si la medida no existe
 
-                    return render(request, 'pedidos.html')
+                    messages.success(request, f'Pedido {pedido.id} creado exitosamente.')
+                    return redirect("listado_pedidos")
                 else:
                     return render(request, 'crear_pedido.html', {
                         'formset': producto_formset,
@@ -135,20 +136,77 @@ def crear_pedido(request):
 def editar_pedido(request, id):
     if request.session.get("estado_sesion"):
         pedido = Pedido.objects.select_related('estado_pedido', 'estado_pago', 'cliente', 'usuario').prefetch_related('pedidos').get(pk=id)
-        estados_pago = EstadoPago.objects.all()
-        estados_pedido = EstadoPedido.objects.all()
-        categorias_medida = medida_choices()
-        datos = {
-            "pedido": pedido,
-            "nombre_usuario": request.session.get("nombre_usuario").upper(),
-            "estados_pedido": estados_pedido,
-            "estados_pago": estados_pago,
-            "categorias_medida": categorias_medida
-        }
-        return render(request, "editar_pedido.html", datos)
+        if request.method == 'POST':
+        # Actualizar cliente
+            cliente = pedido.cliente
+            cliente.nombre = request.POST['nombre']
+            cliente.apellido = request.POST['apellido']
+            cliente.correo = request.POST['correo']
+            cliente.telefono = request.POST['telefono']
+            cliente.save()
+
+
+            # Actualizar pedido
+            pedido.fecha_entrega = request.POST['fecha_entrega']
+            pedido.subtotal = request.POST['subtotal']
+            pedido.abono = request.POST['abono']
+
+            pedido.estado_pago = EstadoPago.objects.get(pk=request.POST['estado_pago'])
+            pedido.estado_pedido = EstadoPedido.objects.get(pk=request.POST['estado_pedido'])
+            pedido.save()
+
+            # Actualizar productos
+            producto_formset = ProductoFormSet(request.POST, queryset=pedido.pedidos.all())
+            if producto_formset.is_valid():
+                productos = producto_formset.save(commit=False)
+                for producto in productos:
+                    producto.pedido = pedido
+                    producto.save()
+
+                    # Medidas por producto
+                    medida_prefix = f'producto-{producto.id}-medidas'
+                    for key in request.POST:
+                        if key.startswith(medida_prefix) and key.endswith('-medidas'):
+                            medida_index = key.split('-')[2]
+                            medida_id = request.POST.get(f'{medida_prefix}-{medida_index}-medidas')
+                            longitud = request.POST.get(f'{medida_prefix}-{medida_index}-longitud')
+                            if medida_id and longitud:
+                                medida_obj = Medida.objects.get(pk=medida_id)
+                                ProductoMedida.objects.update_or_create(
+                                    producto=producto,
+                                    medidas=medida_obj,
+                                    defaults={'longitud': longitud}
+                                )
+            messages.success(request, "Pedido actualizado correctamente.")
+            return redirect('listado_pedidos')
+
+        else:
+            producto_formset = ProductoEditarFormSet(queryset=pedido.pedidos.all())
+            medida_formsets = []
+            for producto in pedido.pedidos.all():
+                medida_form = ProductoMedidaEditarFormSet(instance=producto)
+                medida_formsets.append(medida_form)
+            for m in medida_formsets:
+                print(m)
+            estados_pago = EstadoPago.objects.all()
+            estados_pedido = EstadoPedido.objects.all()
+            estados_producto = EstadoProducto.objects.all()
+            categorias_medida = medida_choices()
+            datos = {
+                "pedido": pedido,
+                "nombre_usuario": request.session.get("nombre_usuario").upper(),
+                'formset': producto_formset,
+                'medida_formsets': medida_formsets,
+                'medida_form': medida_form,
+                "estados_pedido": estados_pedido,
+                "estados_pago": estados_pago,
+                "estados_producto": estados_producto,
+                "categorias_medida": categorias_medida
+            }
+            return render(request, "editar_pedido.html", datos)
     else:
-        return render(request, "main/index.html", {"r2": "Debe iniciar sesión para ingresar a la página."})
-    # template que facilita el seguimiento de un pedido
+        messages.error(request, 'Debe iniciar sesión para ingresar a la página.')
+        redirect('login')
 
 # -----------------------------------------------------------------
 # CAMBIAR ESTADO PEDIDO
@@ -166,12 +224,12 @@ def cambiar_estado_pedido(request, id):
 
 # -----------------------------------------------------------------
 # ELIMINAR PEDIDO
-def eliminar_pedido(request, pedido_id):
+def eliminar_pedido(request, id):
     if request.session.get('estado_sesion'):
-        pedido = get_object_or_404(Pedido, pk=pedido_id)
+        pedido = Pedido.objects.get(pk=id)
         pedido.delete()
+        messages.success(request, f'Pedido {id} eliminado exitosamente.')
         return redirect("listado_pedidos")
     else:
-        return render(request, "index.html", {"r2": "Debe iniciar sesión para ingresar a la página."})
-
-
+        messages.error(request, 'Debe iniciar sesión para ingresar a la página.')
+        redirect('login')

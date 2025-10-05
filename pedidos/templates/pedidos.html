@@ -1,5 +1,5 @@
 {% extends 'base.html' %}
-
+{% load static %}
 {% block content %}
 <div class="container">
     <div class="d-flex justify-content-between align-items-center m-5">
@@ -31,13 +31,13 @@
                     <td>${{ pedido.subtotal }}</td>
                     <td>${{ pedido.abono|default:"0" }}</td>
                     <td>{{ pedido.usuario.nombre }}</td>
-                    <td>{{ pedido.cliente.nombre }}</td>
+                    <td>{{ pedido.cliente_pedido_relaciones.cliente.nombre }}</td>
                     <td>{{ pedido.estado_pedido.nombre }}</td>
                     <td>{{ pedido.estado_pago.nombre }}</td>
                     <td>
                         <button class="btn btn-sm btn-info"><a href="/pedidos/buscar/{{ pedido.id }}" class="text-decoration-none text-white">Detalle</a></button>
                         <button class="btn btn-sm btn-warning"><a href="/pedidos/editar/{{ pedido.id }}" class="text-decoration-none text-white">Editar</a></button>
-                        <button class="btn btn-sm btn-danger"><a href="/pedidos/eliminar/{{ pedido.id }}" class="text-decoration-none text-white">Eliminar</a></button>
+                        <button class="btn btn-sm btn-danger text-white" onclick="confirmarEliminacion({{ pedido.id }})" class="text-decoration-none">Eliminar</button>
                     </td>
                 </tr>
                 {% endfor %}
@@ -45,4 +45,24 @@
         </table>
     </div>
 </div>
+<!-- Tu JS -->
+<script>
+    function confirmarEliminacion(pedidoId) {
+    Swal.fire({
+        title: '¿Estás seguro?',
+        text: "Esta acción eliminará el pedido y todos sus productos asociados.",
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonColor: '#d33',
+        cancelButtonColor: '#6c757d',
+        confirmButtonText: 'Sí, eliminar',
+        cancelButtonText: 'Cancelar'
+    }).then((result) => {
+        if (result.isConfirmed) {
+            // Redirigir a la vista que elimina el pedido
+            window.location.href = `/pedidos/eliminar/${pedidoId}`;
+        }
+    });
+}
+</script>
 {% endblock %}

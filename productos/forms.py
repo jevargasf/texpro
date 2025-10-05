@@ -20,6 +20,7 @@ class ProductoMedidaForm(forms.ModelForm):
         model = ProductoMedida
         fields = ['medidas', 'longitud']
 
+
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
 
@@ -39,11 +40,26 @@ ProductoFormSet = modelformset_factory(
     can_delete=False
 )
 
+ProductoEditarFormSet = modelformset_factory(
+    Producto,
+    form=ProductoForm,
+    extra=0,
+    can_delete=False
+)
+
 
 ProductoMedidaFormSet = inlineformset_factory(
     Producto,
     ProductoMedida,
     form=ProductoMedidaForm,
     extra=1,
+    can_delete=False
+)
+
+ProductoMedidaEditarFormSet = inlineformset_factory(
+    Producto,
+    ProductoMedida,
+    form=ProductoMedidaForm,
+    extra=0,
     can_delete=False
 )
