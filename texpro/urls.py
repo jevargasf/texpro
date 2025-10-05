@@ -1,7 +1,7 @@
 from django.contrib import admin
 from django.urls import path
 from main.views import mostrar_index, registrar_usuario, login_usuario, cerrar_sesion
-from pedidos.views import mostrar_listado_pedidos, crear_pedido
+from pedidos.views import mostrar_listado_pedidos, crear_pedido, editar_pedido
 
 urlpatterns = [
     path('admin/', admin.site.urls),
@@ -11,9 +11,9 @@ urlpatterns = [
     path('usuarios/logout', cerrar_sesion, name='cerrar_sesion'),
     path('pedidos/', mostrar_listado_pedidos),
     path('pedidos/crear', crear_pedido),
-    # path('pedidos/editar', editar_pedido),
-    # path('pedidos/obtener', obtener_pedido),
-    # path('pedidos/eliminar', eliminar_pedido),
+    path('pedidos/editar/<int:id>', editar_pedido),
+    #path('pedidos/obtener', obtener_pedido),
+    #path('pedidos/eliminar', eliminar_pedido),
     # path('productos/editar', editar_producto),
     # path('productos/eliminar', eliminar_producto),
     # path('medidas/', mostrar_listado_medidas),

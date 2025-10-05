@@ -1,12 +1,25 @@
 # Create your views here.
 from django.shortcuts import render, redirect, get_object_or_404
 from main.models import Usuario
-from pedidos.models import Pedido, Cliente
+from pedidos.models import Pedido, Cliente, EstadoPago, EstadoPedido
 from productos.models import Producto, ProductoMedida, Medida, EstadoProducto, CategoriaMedida
 from django.shortcuts import render, redirect
 from productos.forms import ProductoFormSet, ProductoMedidaFormSet, ProductoMedidaForm
 from collections import defaultdict
 
+
+# -----------------------------------------------------------------
+# LISTAR PRODUCTOS
+
+def medida_choices():
+    medida_choices = []
+    for categoria in CategoriaMedida.objects.prefetch_related('medida_set'):
+        opciones = [
+            (medida.id, f"{medida.nombre} ({medida.unidad})")
+            for medida in categoria.medida_set.all()
+        ]
+        medida_choices.append((categoria.nombre, opciones))
+    return medida_choices
 # -----------------------------------------------------------------
 # LISTAR PRODUCTOS
 def mostrar_listado_pedidos(request):
@@ -25,14 +38,6 @@ def mostrar_listado_pedidos(request):
 
 def crear_pedido(request):
     if request.session.get('estado_sesion'):
-        print(request.method)
-        medida_choices = []
-        for categoria in CategoriaMedida.objects.prefetch_related('medida_set'):
-            opciones = [
-                (medida.id, f"{medida.nombre} ({medida.unidad})")
-                for medida in categoria.medida_set.all()
-            ]
-            medida_choices.append((categoria.nombre, opciones))
         if request.method == 'POST':
             try:
                 # Datos del cliente y pedido
@@ -125,13 +130,38 @@ def crear_pedido(request):
     else:
         return redirect('login')
 
-
-
-
 # -----------------------------------------------------------------
 # ACTUALIZAR PEDIDO
-def seguimiento_pedido(request):
-    pass
+def editar_pedido(request, id):
+    if request.session.get("estado_sesion"):
+        pedido = Pedido.objects.select_related('estado_pedido', 'estado_pago', 'cliente', 'usuario').prefetch_related('pedidos').get(pk=id)
+        estados_pago = EstadoPago.objects.all()
+        estados_pedido = EstadoPedido.objects.all()
+        categorias_medida = medida_choices()
+        datos = {
+            "pedido": pedido,
+            "nombre_usuario": request.session.get("nombre_usuario").upper(),
+            "estados_pedido": estados_pedido,
+            "estados_pago": estados_pago,
+            "categorias_medida": categorias_medida
+        }
+        return render(request, "editar_pedido.html", datos)
+    else:
+        return render(request, "main/index.html", {"r2": "Debe iniciar sesión para ingresar a la página."})
+    # template que facilita el seguimiento de un pedido
+
+# -----------------------------------------------------------------
+# CAMBIAR ESTADO PEDIDO
+def cambiar_estado_pedido(request, id):
+    if request.session.get("estado_sesion"):
+        pedido = Pedido.objects.get(pk=id).select_related('estado_pedido', 'estado_pago', 'cliente', 'usuario').prefetch_related('pedidos')
+        datos = {
+            "pedido": pedido,
+            "nombre_usuario": request.session.get("nombre_usuario").upper()
+        }
+        return render(request, "editar_pedido.html", datos)
+    else:
+        return render(request, "main/index.html", {"r2": "Debe iniciar sesión para ingresar a la página."})
     # template que facilita el seguimiento de un pedido
 
 # -----------------------------------------------------------------

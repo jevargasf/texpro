@@ -1,0 +1,140 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block content %}
+
+<div class="container mt-4">
+<h4>Editar Pedido</h4>
+
+    <form action="pedidos/editar/{{ pedido.id }}" method="post">
+    {% csrf_token %}
+    <div class="row mb-3">
+      <div class="col-md-6">
+        <label class="form-label">Nombre del Cliente</label>
+        <input type="text" name="nombre" class="form-control" value="{{ pedido.cliente.nombre }}">
+      </div>
+      <div class="col-md-6">
+        <label class="form-label">Apellido</label>
+        <input type="text" name="apellido" class="form-control" value="{{ pedido.cliente.apellido }}">
+      </div>
+    </div>
+
+    <div class="row mb-3">
+      <div class="col-md-6">
+        <label class="form-label">Correo</label>
+        <input type="email" name="correo" class="form-control" value="{{ pedido.cliente.correo }}">
+      </div>
+      <div class="col-md-6">
+        <label class="form-label">Teléfono</label>
+        <input type="text" name="telefono" class="form-control" value="{{ pedido.cliente.telefono }}">
+      </div>
+    </div>
+
+    <div class="row mb-3">
+      <div class="col-md-6">
+        <label class="form-label">Fecha de Entrega</label>
+        <input type="datetime-local" name="fecha_entrega" class="form-control" value="{{ pedido.fecha_entrega|date:'Y-m-d\TH:i' }}">
+      </div>
+      <div class="col-md-6">
+        <label class="form-label">Subtotal</label>
+        <input type="number" name="subtotal" class="form-control" value="{{ pedido.subtotal }}">
+      </div>
+    </div>
+
+    <div class="row mb-3">
+      <div class="col-md-6">
+        <label class="form-label">Abono</label>
+        <input type="number" name="abono" class="form-control" value="{{ pedido.abono }}">
+      </div>
+      <div class="col-md-6">
+        <label class="form-label">Estado del Pago</label>
+        <select name="estado_pago" class="form-select">
+          {% for estado in estados_pago %}
+            <option value="{{ estado.id }}" {% if estado.id == pedido.estado_pago.id %}selected{% endif %}>{{ estado.nombre }}</option>
+          {% endfor %}
+        </select>
+      </div>
+    </div>
+
+    <div class="mb-3">
+      <label class="form-label">Estado del Pedido</label>
+      <select name="estado_pedido" class="form-select">
+        {% for estado in estados_pedido %}
+          <option value="{{ estado.id }}" {% if estado.id == pedido.estado_pedido.id %}selected{% endif %}>{{ estado.nombre }}</option>
+        {% endfor %}
+      </select>
+    </div>
+
+    <button type="submit" class="btn btn-primary">Guardar cambios</button>
+    </form>
+</div>
+
+<div class="container mt-4">
+  <h4>Editar Productos del Pedido</h4>
+
+  {% for producto in pedido.pedidos.all %}
+    <div class="card mb-4">
+      <div class="card-header bg-light">
+        <strong>Producto {{ forloop.counter }}</strong>
+      </div>
+      <div class="card-body">
+        <div class="mb-3">
+          <label class="form-label">Nombre</label>
+          <input type="text" name="producto_{{ producto.id }}_nombre" class="form-control" value="{{ producto.nombre }}">
+        </div>
+        <div class="mb-3">
+          <label class="form-label">Descripción</label>
+          <textarea name="producto_{{ producto.id }}_descripcion" class="form-control">{{ producto.descripcion }}</textarea>
+        </div>
+        <div class="row mb-3">
+          <div class="col-md-6">
+            <label class="form-label">Precio Unitario</label>
+            <input type="number" name="producto_{{ producto.id }}_precio" class="form-control" value="{{ producto.precio_unitario }}">
+          </div>
+          <div class="col-md-6">
+            <label class="form-label">Cantidad</label>
+            <input type="number" name="producto_{{ producto.id }}_cantidad" class="form-control" value="{{ producto.cantidad }}">
+          </div>
+        </div>
+        <div class="mb-3">
+          <label class="form-label">Estado</label>
+          <select name="producto_{{ producto.id }}_estado" class="form-select">
+            {% for estado in estados_producto %}
+              <option value="{{ estado.id }}" {% if estado.id == producto.estado_producto.id %}selected{% endif %}>{{ estado.nombre }}</option>
+            {% endfor %}
+          </select>
+        </div>
+
+        <hr>
+        <h6>Medidas</h6>
+        {% for medida in producto.productos.all %}
+          <div class="row mb-2">
+            <div class="col-md-6">
+              <label class="form-label">Medida</label>
+              <select name="medida_{{ medida.id }}_medidas" class="form-select">
+                {% for categoria, opciones in categorias_medida %}
+                    <optgroup label="{{ categoria }}">
+                        {% for id, label in opciones %}
+                            {% if id == medida.id %}
+                            <option value="{{ id }}" selected>{{ label }}</option>
+                            {% else %}
+                            <option value="{{ id }}">{{ label }}</option>
+                            {% endif %}
+                        {% endfor %}
+                    </optgroup>
+                {% endfor %}
+              </select>
+            </div>
+            <div class="col-md-6">
+              <label class="form-label">Longitud</label>
+              <input type="number" name="medida_{{ medida.id }}_longitud" class="form-control" value="{{ medida.longitud }}">
+            </div>
+          </div>
+        {% endfor %}
+      </div>
+    </div>
+  {% endfor %}
+</div>
+
+
+{% endblock %}
