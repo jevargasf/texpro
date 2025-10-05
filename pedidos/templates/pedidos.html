@@ -2,10 +2,10 @@
 
 {% block content %}
 <div class="container">
-    <div class="d-flex justify-content-between align-items-center mb-3">
+    <div class="d-flex justify-content-between align-items-center m-5">
         <h3>Pedidos</h3>
         <!-- Botón Agregar -->
-        <button class="btn btn-success"><a href="/pedidos/crear">Agregar Pedido</a></button>
+        <button class="btn btn-success"><a href="/pedidos/crear" class="text-decoration-none text-white">Agregar Pedido</a></button>
     </div>
 
     <div class="table-responsive">
@@ -35,143 +35,14 @@
                     <td>{{ pedido.estado_pedido.nombre }}</td>
                     <td>{{ pedido.estado_pago.nombre }}</td>
                     <td>
-                        <!-- Botones con modals -->
-                        <button class="btn btn-sm btn-info text-white" data-bs-toggle="modal" data-bs-target="#modalDetalle{{ pedido.id }}">Detalle</button>
-                        <button class="btn btn-sm btn-warning text-dark" data-bs-toggle="modal" data-bs-target="#modalEditar{{ pedido.id }}">Editar</button>
-                        <button class="btn btn-sm btn-danger" data-bs-toggle="modal" data-bs-target="#modalEliminar{{ pedido.id }}">Eliminar</button>
+                        <button class="btn btn-sm btn-info"><a href="/pedidos/buscar/{{ pedido.id }}" class="text-decoration-none text-white">Detalle</a></button>
+                        <button class="btn btn-sm btn-warning"><a href="/pedidos/editar/{{ pedido.id }}" class="text-decoration-none text-white">Editar</a></button>
+                        <button class="btn btn-sm btn-danger"><a href="/pedidos/eliminar/{{ pedido.id }}" class="text-decoration-none text-white">Eliminar</a></button>
                     </td>
                 </tr>
-
-                <!-- Modal Detalle -->
-                <div class="modal fade" id="modalDetalle{{ pedido.id }}" tabindex="-1">
-                  <div class="modal-dialog">
-                    <div class="modal-content">
-                      <div class="modal-header bg-info text-white">
-                        <h5 class="modal-title">Detalle del Pedido</h5>
-                        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-                      </div>
-                      <div class="modal-body">
-                        <p><strong>Cliente:</strong> {{ pedido.cliente.nombre }}</p>
-                        <p><strong>Usuario:</strong> {{ pedido.usuario.nombre }}</p>
-                        <p><strong>Subtotal:</strong> ${{ pedido.subtotal }}</p>
-                        <p><strong>Abono:</strong> ${{ pedido.abono|default:"0" }}</p>
-                        <p><strong>Estado Pedido:</strong> {{ pedido.estado_pedido.nombre }}</p>
-                        <p><strong>Estado Pago:</strong> {{ pedido.estado_pago.nombre }}</p>
-                        <p><strong>Fecha Entrega:</strong> {{ pedido.fecha_entrega }}</p>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-
-                <!-- Modal Editar -->
-                <div class="modal fade" id="modalEditar{{ pedido.id }}" tabindex="-1">
-                  <div class="modal-dialog">
-                    <div class="modal-content">
-                      <form method="post" action="">
-                        {% csrf_token %}
-                        <div class="modal-header bg-warning">
-                          <h5 class="modal-title">Editar Pedido</h5>
-                          <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-                        </div>
-                        <div class="modal-body">
-                          <!-- Campos que puedes llenar dinámicamente -->
-                          <div class="mb-2">
-                              <label for="fecha_entrega">Fecha Entrega</label>
-                              <input type="datetime-local" name="fecha_entrega" class="form-control" required>
-                          </div>
-                          <div class="mb-2">
-                              <label for="abono">Abono</label>
-                              <input type="number" name="abono" class="form-control">
-                          </div>
-                        </div>
-                        <div class="modal-footer">
-                          <button type="submit" class="btn btn-warning">Guardar cambios</button>
-                        </div>
-                      </form>
-                    </div>
-                  </div>
-                </div>
-
-                <!-- Modal Eliminar -->
-                <div class="modal fade" id="modalEliminar{{ pedido.id }}" tabindex="-1">
-                  <div class="modal-dialog modal-sm">
-                    <div class="modal-content">
-                      <form method="post" action="">
-                        {% csrf_token %}
-                        <div class="modal-header bg-danger text-white">
-                          <h5 class="modal-title">Eliminar Pedido</h5>
-                          <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-                        </div>
-                        <div class="modal-body">
-                          ¿Estás seguro que deseas eliminar este pedido?
-                        </div>
-                        <div class="modal-footer">
-                          <button type="submit" class="btn btn-danger">Eliminar</button>
-                        </div>
-                      </form>
-                    </div>
-                  </div>
-                </div>
-
                 {% endfor %}
             </tbody>
         </table>
     </div>
-</div>
-
-<!-- Modal Agregar Pedido -->
-<div class="modal fade" id="modalAgregarPedido" tabindex="-1">
-  <div class="modal-dialog">
-    <div class="modal-content">
-      <form method="post" action="">
-        {% csrf_token %}
-        <div class="modal-header bg-success text-white">
-          <h5 class="modal-title">Agregar Pedido</h5>
-          <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-        </div>
-        <div class="modal-body">
-          <div class="mb-2">
-              <label for="cliente">Cliente</label>
-              <select name="cliente" class="form-select" required>
-                  {% for cliente in clientes %}
-                      <option value="{{ cliente.id }}">{{ cliente.nombre }}</option>
-                  {% endfor %}
-              </select>
-          </div>
-          <div class="mb-2">
-              <label for="estado_pedido">Estado del Pedido</label>
-              <select name="estado_pedido" class="form-select" required>
-                  {% for estado in estados_pedido %}
-                      <option value="{{ estado.id }}">{{ estado.nombre }}</option>
-                  {% endfor %}
-              </select>
-          </div>
-          <div class="mb-2">
-              <label for="estado_pago">Estado del Pago</label>
-              <select name="estado_pago" class="form-select" required>
-                  {% for estado in estados_pago %}
-                      <option value="{{ estado.id }}">{{ estado.nombre }}</option>
-                  {% endfor %}
-              </select>
-          </div>
-          <div class="mb-2">
-              <label for="fecha_entrega">Fecha Entrega</label>
-              <input type="datetime-local" name="fecha_entrega" class="form-control" required>
-          </div>
-          <div class="mb-2">
-              <label for="subtotal">Subtotal</label>
-              <input type="number" name="subtotal" class="form-control" required>
-          </div>
-          <div class="mb-2">
-              <label for="abono">Abono</label>
-              <input type="number" name="abono" class="form-control">
-          </div>
-        </div>
-        <div class="modal-footer">
-          <button type="submit" class="btn btn-success">Guardar</button>
-        </div>
-      </form>
-    </div>
-  </div>
 </div>
 {% endblock %}

@@ -45,7 +45,7 @@
                 <div class="formset-row border rounded p-3 mb-4 bg-body">
                     <h5>Producto {{ forloop.counter }}</h5>
                     {% for field in form.visible_fields %}
-                        <div class="mb-3">
+                        <div class="form-group mb-3">
                             <label class="form-label">{{ field.label }}</label>
                             {{ field }}
                         </div>
