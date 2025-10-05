@@ -8,8 +8,7 @@ from productos.forms import ProductoFormSet, ProductoMedidaFormSet, ProductoMedi
 from collections import defaultdict
 from django.contrib import messages
 # -----------------------------------------------------------------
-# LISTAR PRODUCTOS
-
+# HELPERS
 def medida_choices():
     medida_choices = []
     for categoria in CategoriaMedida.objects.prefetch_related('medida_set'):
@@ -19,6 +18,7 @@ def medida_choices():
         ]
         medida_choices.append((categoria.nombre, opciones))
     return medida_choices
+
 # -----------------------------------------------------------------
 # LISTAR PRODUCTOS
 def mostrar_listado_pedidos(request):
@@ -208,19 +208,6 @@ def editar_pedido(request, id):
         messages.error(request, 'Debe iniciar sesión para ingresar a la página.')
         redirect('login')
 
-# -----------------------------------------------------------------
-# CAMBIAR ESTADO PEDIDO
-def cambiar_estado_pedido(request, id):
-    if request.session.get("estado_sesion"):
-        pedido = Pedido.objects.get(pk=id).select_related('estado_pedido', 'estado_pago', 'cliente', 'usuario').prefetch_related('pedidos')
-        datos = {
-            "pedido": pedido,
-            "nombre_usuario": request.session.get("nombre_usuario").upper()
-        }
-        return render(request, "editar_pedido.html", datos)
-    else:
-        return render(request, "main/index.html", {"r2": "Debe iniciar sesión para ingresar a la página."})
-    # template que facilita el seguimiento de un pedido
 
 # -----------------------------------------------------------------
 # ELIMINAR PEDIDO

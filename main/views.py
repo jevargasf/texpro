@@ -1,18 +1,26 @@
 from django.shortcuts import render, redirect
 from main.models import Usuario
+from django.contrib import messages
+from pedidos.models import Pedido
 # Create your views here.
 
 def mostrar_index(request):
     estado_sesion = request.session.get('estado_sesion')
     if estado_sesion is True:
+        recepcionados = Pedido.objects.filter(estado_pedido=1).count()
+        en_proceso = Pedido.objects.filter(estado_pedido=2).count()
+        listos_para_retiro = Pedido.objects.filter(estado_pedido=3).count()
+        entregados = Pedido.objects.filter(estado_pedido=4).count()
         datos = {
-            'nombre_usuario': request.session.get('nombre_usuario')
+            'nombre_usuario': request.session.get('nombre_usuario'),
+            'recepcionados': recepcionados,
+            'en_proceso': en_proceso,
+            'listos_para_retiro': listos_para_retiro,
+            'entregados': entregados
         }
         return render(request, "index.html", datos)
     else:
-        datos = {
-            'r2': 'Debe iniciar sesión para ingresar a la página.'
-        }
+        messages.error(request, 'Debe iniciar sesión para ingresar a la página.')
         return redirect('login')
 
 def registrar_usuario(request):
