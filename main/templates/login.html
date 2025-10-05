@@ -4,16 +4,7 @@
 
 {% block content %}
         <div class="container mt-3 pt-3 pb-3" style="background-color:lightgray">
-            {% if r2 %}
-            <center>
-                <div id="mensajes" class="pt-2   pb-2">
-                    <div class="alert alert-warning alert-dismissible fade show" role="alert">
-                        <strong>{{ r2 }}</strong>
-                        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-                    </div>
-                </div>
-            </center>
-            {% endif %}
+
             <h1 class="text-center">Iniciar Sesión</h1>
             <center>
                 <form action="/usuarios/login"   method="POST" class="col-9" >

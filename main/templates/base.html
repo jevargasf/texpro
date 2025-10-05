@@ -11,6 +11,26 @@
 <body>
     {% include 'partials/navbar.html' %}
     <div class="container">
+            {% if r1 %}
+            <center>
+                <div id="mensajes" class="pt-2   pb-2">
+                    <div class="alert alert-warning alert-dismissible fade show" role="alert">
+                        <strong>{{ r2 }}</strong>
+                        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                    </div>
+                </div>
+            </center>
+            {% endif %}
+                  {% if r2 %}
+            <center>
+                <div id="mensajes" class="pt-2   pb-2">
+                    <div class="alert alert-warning alert-dismissible fade show" role="alert">
+                        <strong>{{ r2 }}</strong>
+                        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                    </div>
+                </div>
+            </center>
+            {% endif %}
         {% block content %}{% endblock %}
     </div>
     {% include 'partials/footer.html' %}

@@ -25,6 +25,14 @@ def mostrar_listado_pedidos(request):
 
 def crear_pedido(request):
     if request.session.get('estado_sesion'):
+        print(request.method)
+        medida_choices = []
+        for categoria in CategoriaMedida.objects.prefetch_related('medida_set'):
+            opciones = [
+                (medida.id, f"{medida.nombre} ({medida.unidad})")
+                for medida in categoria.medida_set.all()
+            ]
+            medida_choices.append((categoria.nombre, opciones))
         if request.method == 'POST':
             try:
                 # Datos del cliente y pedido
@@ -60,51 +68,56 @@ def crear_pedido(request):
                         producto.pedido = pedido
                         producto.save()
 
-                        # Procesar medidas para este producto
-                        medida_prefix = f'form-{i}-medidas'
-                        medida_formset = ProductoMedidaFormSet(
-                            request.POST,
-                            instance=producto,
-                            prefix=medida_prefix
-                        )
+                    # Procesar medidas manualmente desde request.POST
+                    medida_prefix = f'form-{i}-medidas'
+                    medidas_producto = []
 
-                        if medida_formset.is_valid():
-                            medida_formset.save()
-                        else:
-                            return render(request, 'crear_pedido.html', {
-                                'formset': producto_formset,
-                                'error': f'Error en medidas del producto {producto.nombre}'
-                            })
+                    # Buscar todas las claves que empiezan con el prefijo
+                    for key in request.POST:
+                        if key.startswith(medida_prefix) and key.endswith('-medidas'):
+                            # Extraer el índice de la medida
+                            medida_index = key.split('-')[2]
+                            medida_id = request.POST.get(f'{medida_prefix}-{medida_index}-medidas')
+                            longitud = request.POST.get(f'{medida_prefix}-{medida_index}-longitud')
 
-                    return redirect('detalle_pedido', pedido_id=pedido.id)
+                            if medida_id and longitud:
+                                try:
+                                    medida_obj = Medida.objects.get(pk=medida_id)
+                                    ProductoMedida.objects.create(
+                                        producto=producto,
+                                        medidas=medida_obj,
+                                        longitud=longitud
+                                    )
+                                except Medida.DoesNotExist:
+                                    continue  # ignorar si la medida no existe
 
+                    return render(request, 'pedidos.html')
                 else:
                     return render(request, 'crear_pedido.html', {
                         'formset': producto_formset,
-                        'error': 'Error en los datos de los productos.'
+                        'medida_choices': medida_choices,
+                        'medida_form': ProductoMedidaForm(),
+                        'r2': 'Error en los datos de los productos.'
                     })
 
             except Exception as e:
                 return render(request, 'crear_pedido.html', {
                     'formset': ProductoFormSet(queryset=Producto.objects.none()),
-                    'error': f'Error al crear el pedido: {str(e)}'
+                    'medida_choices': medida_choices,
+                    'medida_form': ProductoMedidaForm(),
+                    'r2': f'Error al crear el pedido: {str(e)}'
                 })
 
         else:
-
-
-            medida_choices = {}
-            for categoria in CategoriaMedida.objects.prefetch_related('medida_set'):
-                medida_choices[categoria.nombre] = [
-                    (medida.id, f"{medida.nombre} ({medida.unidad})")
-                    for medida in categoria.medida_set.all()
-                ]
-
             formset = ProductoFormSet(queryset=Producto.objects.none())
+            medida_form = ProductoMedidaForm()  # solo uno como plantilla
+
             return render(request, 'crear_pedido.html', {
                 'formset': formset,
-                'medida_choices': medida_choices
+                'medida_choices': medida_choices,
+                'medida_form': medida_form
             })
+
 
 
 
