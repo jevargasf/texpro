@@ -3,8 +3,7 @@
 {% load filtros %}
 
 {% block content %}
-<pre>{{ medida_choices }}</pre>
-<div class="container mt-5">
+<div class="container m-5 p-3 border rounded bg-light">
     <h2 class="mb-4">Crear Pedido</h2>
 
     <form method="post" action="/pedidos/crear">
@@ -43,7 +42,7 @@
         {{ formset.management_form }}
         <div id="formset-container">
             {% for form in formset %}
-                <div class="formset-row border rounded p-3 mb-4">
+                <div class="formset-row border rounded p-3 mb-4 bg-body">
                     <h5>Producto {{ forloop.counter }}</h5>
                     {% for field in form.visible_fields %}
                         <div class="mb-3">
@@ -59,15 +58,15 @@
                             <div class="row align-items-end">
                                 <div class="col-md-5">
                                     <label class="form-label">Medida</label>
-<select name="form-{{ forloop.counter0 }}-medidas-0-medidas" class="form-select">
-    {% for categoria, opciones in medida_choices %}
-        <optgroup label="{{ categoria }}">
-            {% for id, label in opciones %}
-                <option value="{{ id }}">{{ label }}</option>
-            {% endfor %}
-        </optgroup>
-    {% endfor %}
-</select>
+                                    <select name="form-{{ forloop.counter0 }}-medidas-0-medidas" class="form-select">
+                                        {% for categoria, opciones in medida_choices %}
+                                            <optgroup label="{{ categoria }}">
+                                                {% for id, label in opciones %}
+                                                    <option value="{{ id }}">{{ label }}</option>
+                                                {% endfor %}
+                                            </optgroup>
+                                        {% endfor %}
+                                    </select>
                                 </div>
                                 <div class="col-md-5">
                                     <label class="form-label">Longitud</label>
@@ -85,10 +84,10 @@
                 </div>
             {% endfor %}
         </div>
-
-        <button type="button" class="btn btn-secondary mb-3" id="add-form">Agregar producto</button>
-        <br>
-        <button type="submit" class="btn btn-primary">Crear Pedido</button>
+        <div class="row">
+        <button type="button" class="btn btn-secondary m-3 col-sm-3" id="add-form">Agregar producto</button>
+        <button type="submit" class="btn btn-primary m-3 col-sm-3">Crear Pedido</button>
+        </div>
     </form>
 </div>
 
