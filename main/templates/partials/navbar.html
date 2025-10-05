@@ -3,7 +3,7 @@
   <nav class="navbar navbar-expand-lg navbar-light bg-light shadow-sm">
     <div class="container">
       <!-- Logo y nombre -->
-      <a class="navbar-brand d-flex align-items-center" href="#">
+      <a class="navbar-brand d-flex align-items-center" href="/">
         <img src="{% static 'images/logo.png' %}" alt="Logo TexPro" width="100" class="me-2">
         <strong>TexPro Gestión</strong>
       </a>
@@ -17,13 +17,13 @@
       <div class="collapse navbar-collapse" id="navbarNav">
         <ul class="navbar-nav ms-auto">
           <li class="nav-item">
-            <a class="nav-link active" href="#">Inicio</a>
+            <a class="nav-link active" href="/">Inicio</a>
           </li>
           <li class="nav-item">
             <a class="nav-link" href="/pedidos">Pedidos</a>
           </li>
           <li class="nav-item">
-            <a class="nav-link" href="#">Productos</a>
+            <a class="nav-link" href="/productos">Productos</a>
           </li>
           <li>
             {% if request.session.estado_sesion %}
