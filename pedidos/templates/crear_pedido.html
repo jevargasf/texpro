@@ -70,7 +70,7 @@
                                 </div>
                                 <div class="col-md-5">
                                     <label class="form-label">Longitud</label>
-                                    {{ medida_form.longitud }}
+                                    <input type="number" name="form-{{ forloop.counter0 }}-medidas-0-longitud" class="form-control" required>
                                 </div>
                                 <div class="col-md-2">
                                     <button type="button" class="btn btn-sm btn-danger remove-medida-btn">Eliminar</button>

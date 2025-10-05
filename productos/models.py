@@ -34,7 +34,7 @@ class Producto(models.Model):
         return f"Producto: {self.nombre} | {self.pedido}"
     
 class ProductoMedida(models.Model):
-    producto = models.ForeignKey(Producto, on_delete=models.CASCADE, related_name='productos')
+    producto = models.ForeignKey(Producto, on_delete=models.CASCADE, related_name='medidas_producto')
     medidas = models.ForeignKey(Medida, on_delete=models.CASCADE, related_name='medidas')
     longitud = models.PositiveIntegerField(blank=False, null=False)
 

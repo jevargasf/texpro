@@ -1,0 +1,57 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="container mt-5">
+    <div class="card shadow-sm">
+        <div class="card-header bg-primary text-white">
+            <h4 class="mb-0">Detalle del Pedido</h4>
+        </div>
+        <div class="card-body">
+
+            <!-- Cliente -->
+            <h5 class="text-muted">Cliente</h5>
+            <p><strong>Nombre:</strong> {{ pedido.cliente.nombre }} {{ pedido.cliente.apellido }}</p>
+            <p><strong>Correo:</strong> {{ pedido.cliente.correo }}</p>
+            <p><strong>Teléfono:</strong> {{ pedido.cliente.telefono }}</p>
+
+            <hr>
+
+            <!-- Pedido -->
+            <h5 class="text-muted">Pedido</h5>
+            <p><strong>Fecha del pedido:</strong> {{ pedido.fecha_pedido|date:"d/m/Y H:i" }}</p>
+            <p><strong>Fecha de entrega:</strong> {{ pedido.fecha_entrega|date:"d/m/Y H:i" }}</p>
+            <p><strong>Subtotal:</strong> ${{ pedido.subtotal }}</p>
+            <p><strong>Abono:</strong> ${{ pedido.abono }}</p>
+            <p><strong>Estado del pedido:</strong> {{ pedido.estado_pedido.nombre }}</p>
+            <p><strong>Estado del pago:</strong> {{ pedido.estado_pago.nombre }}</p>
+            <p><strong>Creado por:</strong> {{ pedido.usuario.nombre }}</p>
+
+            <hr>
+
+            <!-- Productos -->
+
+            <h3>Productos</h3>
+            <ul>
+{% for producto in pedido.pedidos.all %}
+    <li>
+        <strong>{{ producto.nombre }}</strong> - {{ producto.descripcion }}<br>
+        Precio unitario: {{ producto.precio_unitario }}<br>
+        Cantidad: {{ producto.cantidad }}
+        <ul>
+{% for producto_medida in producto.medidas_producto.all %}
+    <li>
+        Medida: {{ producto_medida.medidas.nombre }} ({{ producto_medida.medidas.unidad }}) -
+        Longitud: {{ producto_medida.longitud }}
+    </li>
+{% empty %}
+    <li>No hay medidas registradas para este producto.</li>
+{% endfor %}
+        </ul>
+    </li>
+{% endfor %}
+
+            </ul>
+
+        </div>
+    </div>
+</div>
+{% endblock %}

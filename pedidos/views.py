@@ -7,6 +7,10 @@ from django.shortcuts import render, redirect
 from productos.forms import ProductoFormSet, ProductoMedidaFormSet, ProductoMedidaForm, ProductoEditarFormSet, ProductoMedidaEditarFormSet
 from collections import defaultdict
 from django.contrib import messages
+from django.db.models import Prefetch
+from django.utils import timezone
+import datetime
+
 # -----------------------------------------------------------------
 # HELPERS
 def medida_choices():
@@ -18,6 +22,11 @@ def medida_choices():
         ]
         medida_choices.append((categoria.nombre, opciones))
     return medida_choices
+
+def convertir_fecha_aware(fecha_naive):
+    fecha_naive = datetime.datetime(2025, 10, 9, 18, 37)
+    fecha_aware = timezone.make_aware(fecha_naive)
+    return fecha_aware
 
 # -----------------------------------------------------------------
 # LISTAR PRODUCTOS
@@ -32,6 +41,33 @@ def mostrar_listado_pedidos(request):
     else:
         return render(request, "main/index.html", {"r2": "Debe iniciar sesión para ingresar a la página."})
 
+# -----------------------------------------------------------------
+# OBTENER PEDIDO
+def obtener_pedido(request, id):
+    if request.session.get("estado_sesion"):
+
+        pedido = get_object_or_404(
+            Pedido.objects.select_related(
+                'estado_pedido', 'estado_pago', 'cliente', 'usuario'
+            ).prefetch_related(
+                Prefetch(
+                    'pedidos',
+                    queryset=Producto.objects.prefetch_related(
+                        Prefetch(
+                            'medidas_producto',
+                            queryset=ProductoMedida.objects.select_related('medidas')
+                        )
+                    )
+                )
+            ), pk=id)
+        datos = {
+            "pedido": pedido,
+            "nombre_usuario": request.session.get("nombre_usuario").upper()
+        }
+        return render(request, "detalle_pedido.html", datos)
+    else:
+        messages.error(request, 'Debe iniciar sesión para ingresar a la página.')
+        redirect('login')
 # -----------------------------------------------------------------
 # CREAR PEDIDO
 
@@ -49,13 +85,17 @@ def crear_pedido(request):
 
                 # Crear cliente
 
-                cliente = Cliente.objects.get_or_create(
-                    nombre=nombre_cliente,
-                    apellido=apellido_cliente,
+                # Crear o obtener cliente
+                cliente, created = Cliente.objects.get_or_create(
                     correo=correo,
-                    telefono=telefono
+                    defaults={
+                        'nombre': nombre_cliente,
+                        'apellido': apellido_cliente,
+                        'telefono': telefono
+                    }
                 )
                 cliente_obj = Cliente.objects.get(correo=correo)
+
                 # Crear pedido
                 pedido = Pedido.objects.create(
                     fecha_entrega=fecha,
@@ -73,18 +113,20 @@ def crear_pedido(request):
                         producto.pedido = pedido
                         producto.save()
 
-                    # Procesar medidas manualmente desde request.POST
-                    medida_prefix = f'form-{i}-medidas'
-                    medidas_producto = []
-
-                    # Buscar todas las claves que empiezan con el prefijo
-                    for key in request.POST:
-                        if key.startswith(medida_prefix) and key.endswith('-medidas'):
-                            # Extraer el índice de la medida
-                            medida_index = key.split('-')[2]
-                            medida_id = request.POST.get(f'{medida_prefix}-{medida_index}-medidas')
-                            longitud = request.POST.get(f'{medida_prefix}-{medida_index}-longitud')
-
+                        # Procesar medidas manualmente desde request.POST
+                        medida_prefix = f'form-{i}-medidas'
+                        medida_index = 0
+                        # Buscar todas las claves que empiezan con el prefijo
+                        while True:
+                            medida_key = f'{medida_prefix}-{medida_index}-medidas'
+                            longitud_key = f'{medida_prefix}-{medida_index}-longitud'
+                            
+                            if medida_key not in request.POST:
+                                break  # No hay más medidas para este producto
+                                
+                            medida_id = request.POST.get(medida_key)
+                            longitud = request.POST.get(longitud_key)
+                            
                             if medida_id and longitud:
                                 try:
                                     medida_obj = Medida.objects.get(pk=medida_id)
@@ -94,16 +136,19 @@ def crear_pedido(request):
                                         longitud=longitud
                                     )
                                 except Medida.DoesNotExist:
-                                    continue  # ignorar si la medida no existe
+                                    pass  # Ignorar si la medida no existe
+                            
+                            medida_index += 1
 
-                    messages.success(request, f'Pedido {pedido.id} creado exitosamente.')
+                    messages.success(request, f'Pedido #{pedido.id} creado exitosamente.')
                     return redirect("listado_pedidos")
                 else:
+                    errores = producto_formset.errors
                     return render(request, 'crear_pedido.html', {
                         'formset': producto_formset,
                         'medida_choices': medida_choices,
                         'medida_form': ProductoMedidaForm(),
-                        'r2': 'Error en los datos de los productos.'
+                        'r2': f'Error en los datos de los productos: {errores}'
                     })
 
             except Exception as e:
