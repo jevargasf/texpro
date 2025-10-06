@@ -37,14 +37,14 @@ ProductoFormSet = modelformset_factory(
     Producto,
     form=ProductoForm,
     extra=1,
-    can_delete=False
+    can_delete=True
 )
 
 ProductoEditarFormSet = modelformset_factory(
     Producto,
     form=ProductoForm,
     extra=0,
-    can_delete=False
+    can_delete=True
 )
 
 
@@ -53,7 +53,7 @@ ProductoMedidaFormSet = inlineformset_factory(
     ProductoMedida,
     form=ProductoMedidaForm,
     extra=1,
-    can_delete=False
+    can_delete=True
 )
 
 ProductoMedidaEditarFormSet = inlineformset_factory(
@@ -61,5 +61,5 @@ ProductoMedidaEditarFormSet = inlineformset_factory(
     ProductoMedida,
     form=ProductoMedidaForm,
     extra=0,
-    can_delete=False
+    can_delete=True
 )

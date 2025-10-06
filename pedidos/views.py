@@ -94,13 +94,12 @@ def crear_pedido(request):
                         'telefono': telefono
                     }
                 )
-                cliente_obj = Cliente.objects.get(correo=correo)
 
                 # Crear pedido
                 pedido = Pedido.objects.create(
                     fecha_entrega=fecha,
                     usuario=usuario,
-                    cliente=cliente_obj
+                    cliente=cliente  # ← usar directamente 'cliente', no 'cliente_obj'
                 )
 
                 # Formset de productos
@@ -181,8 +180,9 @@ def crear_pedido(request):
 def editar_pedido(request, id):
     if request.session.get("estado_sesion"):
         pedido = Pedido.objects.select_related('estado_pedido', 'estado_pago', 'cliente', 'usuario').prefetch_related('pedidos').get(pk=id)
+        
         if request.method == 'POST':
-        # Actualizar cliente
+            # Actualizar cliente
             cliente = pedido.cliente
             cliente.nombre = request.POST['nombre']
             cliente.apellido = request.POST['apellido']
@@ -190,70 +190,80 @@ def editar_pedido(request, id):
             cliente.telefono = request.POST['telefono']
             cliente.save()
 
-
             # Actualizar pedido
             pedido.fecha_entrega = request.POST['fecha_entrega']
-            pedido.subtotal = request.POST['subtotal']
-            pedido.abono = request.POST['abono']
-
+            pedido.subtotal = request.POST.get('subtotal', 0) or 0
+            pedido.abono = request.POST.get('abono', 0) or 0
             pedido.estado_pago = EstadoPago.objects.get(pk=request.POST['estado_pago'])
             pedido.estado_pedido = EstadoPedido.objects.get(pk=request.POST['estado_pedido'])
             pedido.save()
 
-            # Actualizar productos
-            producto_formset = ProductoFormSet(request.POST, queryset=pedido.pedidos.all())
+            # Actualizar productos usando el mismo patrón que crear_pedido
+            producto_formset = ProductoEditarFormSet(request.POST, queryset=pedido.pedidos.all(), prefix='form')
+            
             if producto_formset.is_valid():
-                productos = producto_formset.save(commit=False)
-                for producto in productos:
+            # Crear y procesar formsets de medidas por producto
+                for i, form in enumerate(producto_formset.forms):
+                    if form.cleaned_data.get('DELETE', False):
+                        continue
+
+                    producto = form.save(commit=False)
                     producto.pedido = pedido
                     producto.save()
 
-                    # Medidas por producto
-                    medida_prefix = f'producto-{producto.id}-medidas'
-                    for key in request.POST:
-                        if key.startswith(medida_prefix) and key.endswith('-medidas'):
-                            medida_index = key.split('-')[2]
-                            medida_id = request.POST.get(f'{medida_prefix}-{medida_index}-medidas')
-                            longitud = request.POST.get(f'{medida_prefix}-{medida_index}-longitud')
-                            if medida_id and longitud:
-                                medida_obj = Medida.objects.get(pk=medida_id)
-                                ProductoMedida.objects.update_or_create(
-                                    producto=producto,
-                                    medidas=medida_obj,
-                                    defaults={'longitud': longitud}
-                                )
-            messages.success(request, "Pedido actualizado correctamente.")
-            return redirect('listado_pedidos')
+                    medidas_formset = ProductoMedidaFormSet(
+                        request.POST,
+                        prefix=f'form-{i}-medidas',
+                        instance=producto
+                    )
 
-        else:
-            producto_formset = ProductoEditarFormSet(queryset=pedido.pedidos.all())
-            medida_formsets = []
-            for producto in pedido.pedidos.all():
-                medida_form = ProductoMedidaEditarFormSet(instance=producto)
-                medida_formsets.append(medida_form)
-            for m in medida_formsets:
-                print(m)
-            estados_pago = EstadoPago.objects.all()
-            estados_pedido = EstadoPedido.objects.all()
-            estados_producto = EstadoProducto.objects.all()
-            categorias_medida = medida_choices()
-            datos = {
-                "pedido": pedido,
-                "nombre_usuario": request.session.get("nombre_usuario").upper(),
-                'formset': producto_formset,
-                'medida_formsets': medida_formsets,
-                'medida_form': medida_form,
-                "estados_pedido": estados_pedido,
-                "estados_pago": estados_pago,
-                "estados_producto": estados_producto,
-                "categorias_medida": categorias_medida
-            }
-            return render(request, "editar_pedido.html", datos)
+                    if medidas_formset.is_valid():
+                        medidas_formset.save()
+                    else:
+                        print(f"Errores en medidas del producto {i}:", medidas_formset.errors)
+
+                messages.success(request, "Pedido actualizado correctamente.")
+                return redirect('listado_pedidos')
+            else:
+                messages.error(request, f"Error en el formulario: {producto_formset.errors}")
+                
+        # GET request - mostrar formulario
+        producto_formset = ProductoEditarFormSet(queryset=pedido.pedidos.all())
+        
+        # Preparar datos de medidas para cada producto
+        formset_con_medidas = []
+        for i, form in enumerate(producto_formset.forms):
+            prefix = f'form-{i}-medidas'
+            producto = form.instance
+            medidas_formset = ProductoMedidaFormSet(
+                request.POST or None,
+                prefix=prefix,
+                queryset=producto.medidas_producto.all() if producto.pk else ProductoMedida.objects.none()
+            )
+            formset_con_medidas.append((form, medidas_formset))
+
+
+                
+        estados_pago = EstadoPago.objects.all()
+        estados_pedido = EstadoPedido.objects.all()
+        estados_producto = EstadoProducto.objects.all()
+        
+        datos = {
+            # En el contexto:
+            'formset_con_medidas': formset_con_medidas,
+            "pedido": pedido,
+            "nombre_usuario": request.session.get("nombre_usuario").upper(),
+            'formset': producto_formset,
+            #'productos_con_medidas': productos_con_medidas,
+            'medida_choices': medida_choices(),
+            "estados_pedido": estados_pedido,
+            "estados_pago": estados_pago,
+            "estados_producto": estados_producto,
+        }
+        return render(request, "editar_pedido.html", datos)
     else:
         messages.error(request, 'Debe iniciar sesión para ingresar a la página.')
-        redirect('login')
-
-
+        return redirect('login')
 # -----------------------------------------------------------------
 # ELIMINAR PEDIDO
 def eliminar_pedido(request, id):
