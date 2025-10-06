@@ -236,9 +236,8 @@ def editar_pedido(request, id):
             prefix = f'form-{i}-medidas'
             producto = form.instance
             medidas_formset = ProductoMedidaFormSet(
-                request.POST or None,
                 prefix=prefix,
-                queryset=producto.medidas_producto.all() if producto.pk else ProductoMedida.objects.none()
+                instance=producto
             )
             formset_con_medidas.append((form, medidas_formset))
 
