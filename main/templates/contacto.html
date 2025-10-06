@@ -1,0 +1,42 @@
+{% extends "base.html" %}
+
+{% block content %}
+<header class="text-center">
+  <div class="container">
+    <h1 class="fw-bold">Contáctanos</h1>
+    <p class="lead mt-3">¿Tienes dudas o quieres más información sobre TexPro Gestión? Escríbenos y te responderemos pronto.</p>
+  </div>
+</header>
+
+<section class="container my-5">
+  <div class="row">
+    <div class="col-md-6 mb-4">
+      <h4 class="fw-bold text-primary mb-3">Formulario de Contacto</h4>
+      <form>
+        <div class="mb-3">
+          <label for="name" class="form-label">Nombre</label>
+          <input type="text" class="form-control" id="name" placeholder="Tu nombre">
+        </div>
+        <div class="mb-3">
+          <label for="email" class="form-label">Correo Electrónico</label>
+          <input type="email" class="form-control" id="email" placeholder="nombre@correo.com">
+        </div>
+        <div class="mb-3">
+          <label for="message" class="form-label">Mensaje</label>
+          <textarea class="form-control" id="message" rows="4" placeholder="Escribe tu mensaje aquí..."></textarea>
+        </div>
+        <button type="submit" class="btn btn-primary"><i class="bi bi-send-fill"></i> Enviar</button>
+      </form>
+    </div>
+    <div class="col-md-6">
+      <h4 class="fw-bold text-primary mb-3">Información de Contacto</h4>
+      <p><i class="bi bi-envelope-fill text-primary"></i> contacto@texprogestion.com</p>
+      <p><i class="bi bi-telephone-fill text-primary"></i> +56 9 1234 5678</p>
+      <p><i class="bi bi-geo-alt-fill text-primary"></i> rancagua, Chile</p>
+      <div class="ratio ratio-16x9 mt-4">
+        <iframe src="https://maps.google.com/maps?q=santiago%20chile&t=&z=13&ie=UTF8&iwloc=&output=embed"></iframe>
+      </div>
+    </div>
+  </div>
+</section>
+{% endblock %}

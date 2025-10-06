@@ -1,0 +1,72 @@
+{% extends "base.html" %}
+
+{% block content %}
+<header class="text-center">
+  <div class="container">
+    <h1 class="fw-bold">Conoce TexPro Gestión</h1>
+    <p class="lead mt-3">La aplicación web que revoluciona la gestión de prendas a medida para talleres textiles y de confección.</p>
+    <a href="contacto.html" class="btn btn-light btn-lg mt-3"><i class="bi bi-envelope-fill"></i> Contáctanos</a>
+  </div>
+</header>
+
+<section class="container my-5 text-center">
+  <h2 class="mb-4 fw-bold text-primary">¿Qué hace TexPro Gestión?</h2>
+  <p class="mb-5">TexPro Gestión permite administrar fácilmente los pedidos de prendas confeccionadas a medida, 
+  registrando las medidas específicas de cada cliente y cada tipo de prenda (pantalones, camisas, vestidos, etc.). 
+  Con nuestra base de datos especializada en patrones de confección, los talleres pueden reducir errores, ahorrar tiempo y ofrecer un servicio profesional y personalizado.</p>
+
+  <div class="row">
+    <div class="col-md-4">
+      <i class="bi bi-rulers display-4 text-primary"></i>
+      <h4 class="mt-3">Medidas Personalizadas</h4>
+      <p>Registra y guarda las medidas exactas de cada cliente, para prendas totalmente a medida.</p>
+    </div>
+    <div class="col-md-4">
+      <i class="bi bi-clipboard-data display-4 text-primary"></i>
+      <h4 class="mt-3">Gestión de Pedidos</h4>
+      <p>Administra pedidos activos y finalizados, con fechas de entrega, observaciones y estado del trabajo.</p>
+    </div>
+    <div class="col-md-4">
+      <i class="bi bi-person-workspace display-4 text-primary"></i>
+      <h4 class="mt-3">Optimización del Taller</h4>
+      <p>Organiza tu flujo de trabajo y consulta el historial de prendas y medidas de cada cliente.</p>
+    </div>
+  </div>
+</section>
+
+<section class="container my-5">
+  <h2 class="fw-bold text-primary text-center mb-4">Ejemplos de Pedidos Reales</h2>
+  <div class="table-responsive">
+    <table class="table table-bordered align-middle">
+      <thead class="table-primary">
+        <tr>
+          <th>Cliente</th>
+          <th>Prenda</th>
+          <th>Medidas principales</th>
+          <th>Fecha de entrega</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>Camila Rojas</td>
+          <td>Pantalón de vestir</td>
+          <td>Cintura: 72 cm · Cadera: 96 cm · Largo: 102 cm</td>
+          <td>12/10/2025</td>
+        </tr>
+        <tr>
+          <td>Andrés Fuentes</td>
+          <td>Camisa a medida</td>
+          <td>Cuello: 39 cm · Pecho: 100 cm · Manga: 64 cm</td>
+          <td>14/10/2025</td>
+        </tr>
+        <tr>
+          <td>Daniela Pino</td>
+          <td>Vestido casual</td>
+          <td>Busto: 88 cm · Cintura: 70 cm · Largo: 90 cm</td>
+          <td>16/10/2025</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</section>
+{% endblock %}

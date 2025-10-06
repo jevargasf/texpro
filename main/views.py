@@ -24,24 +24,29 @@ def mostrar_index(request):
         return redirect('login')
 
 def registrar_usuario(request):
-    if request.method == 'POST':
-        correo = request.POST['correo']
-        nombre = request.POST['nombre']
-        apellido = request.POST['apellido']
-        contrasena = request.POST['contrasena']
+    try:
+        if request.method == 'POST':
+            correo = request.POST['correo']
+            nombre = request.POST['nombre']
+            apellido = request.POST['apellido']
+            contrasena = request.POST['contrasena']
 
-        nuevo_usuario = Usuario.objects.create(
-            nombre=nombre,
-            apellido=apellido,
-            correo=correo,
-            contrasena=contrasena
-        )
-        nuevo_usuario.save()
-        datos = {
-            'r2': 'Usuario creado correctamente. Por favor, inicie sesión.'
-        }
-        return render(request, "login.html", datos)
+            nuevo_usuario = Usuario.objects.create(
+                nombre=nombre,
+                apellido=apellido,
+                correo=correo,
+                contrasena=contrasena
+            )
+            nuevo_usuario.save()
+            messages.success(request, 'Usuario creado correctamente. Por favor, inicie sesión')
+            return render(request, "login.html")
+        else:
+            return render(request, 'registrar.html')
+    except Exception as e:
+        messages.error(request, e)
+        return render(request, 'registrar.html')
 
+    
 def login_usuario(request):
     if request.method == 'POST':
         correo = request.POST['txtcorreo']
@@ -64,10 +69,7 @@ def login_usuario(request):
             }
             return render(request, "login.html", datos)
     else:
-        datos = {
-            'r2': 'No se pudo procesar la solicitud.'
-        }
-        return render(request, "login.html", datos)
+        return render(request, "login.html")
 
 def cerrar_sesion(request):
     try:
@@ -78,3 +80,12 @@ def cerrar_sesion(request):
         return render(request, 'login.html')
     except:
         return render(request, 'login.html')
+    
+def mostrar_quienes_somos(request):
+    return render(request, 'quienes_somos.html')
+
+def mostrar_conoce_texpro(request):
+    return render(request, 'descripcion_texpro.html')
+
+def mostrar_contacto(request):
+    return render(request, 'contacto.html')
